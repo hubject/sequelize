@@ -1,4 +1,38 @@
 # Future
+- [FIXED] Accept dates as string while using `typeValidation` [#6453](https://github.com/sequelize/sequelize/issues/6453)
+
+# 3.24.1
+- [FIXED] Add `parent`, `original` and `sql` properties to `UniqueConstraintError`
+
+# 3.24.0
+- [ADDED] `restartIdentity` option for truncate in postgres [#5356](https://github.com/sequelize/sequelize/issues/5356)
+
+# 3.23.5
+- [FIXED] Fixed an issue where custom-named model fields break when offsetting, ordering, and including hasMany simultaneously. [#5985](https://github.com/sequelize/sequelize/issues/5985)
+- [FIXED] Don't remove includes from count queries and unify findAndCount and count queries. [#6123](https://github.com/sequelize/sequelize/issues/6123)
+- [FIXED] `Model.count` don't include attributes [#5057](https://github.com/sequelize/sequelize/issues/5057)
+- [SECURITY] `GEOMETRY` and `GEOGRAPHY` SQL injection attacks [#6194](https://github.com/sequelize/sequelize/issues/6194)
+
+# 3.23.3
+- [FIXED] Pass ResourceLock instead of raw connection in MSSQL disconnect handling
+
+# 3.23.2
+- [FIXED] Type validation now works with non-strings due to updated validator@5.0.0 [#5861](https://github.com/sequelize/sequelize/pull/5861)
+- [FIXED] Improved offset and limit support for SQL server 2008 [#5616](https://github.com/sequelize/sequelize/pull/5616)
+- [FIXED] options object cloned in all Sequelize methods (so not modified within Sequelize)
+
+# 3.23.1
+- [FIXED] Postgres DECIMAL precision. (PostgreSQL) [#4893](https://github.com/sequelize/sequelize/issues/4893)
+- [FIXED] removeColumn tries to delete non-existant foreign key constraint (mysql) [#5808](https://github.com/sequelize/sequelize/issues/5808)
+- [FIXED] Relation constraints not being applied correctly [#5865](https://github.com/sequelize/sequelize/issues/5865)
+
+# 3.23.0
+- [FIXED] Invalid query generated when using LIKE + ANY [#5736](https://github.com/sequelize/sequelize/issues/5736)
+- [FIXED] Method QueryInterface.bulkDelete no longer working when the model parameter is missing. (PostgreSQL) [#5615](https://github.com/sequelize/sequelize/issues/5615)
+- [ADDED] Context and custom options for deep creation
+- [FIXED] Dates with millisecond precision are inserted correctly in MySQL [#5855](https://github.com/sequelize/sequelize/pull/5855)
+
+# 3.22.0
 - [FIXED] Fix defaultValues getting overwritten on build
 - [FIXED] Queue queries against tedious connections
 - [ADDED] Enable type validation for all queries

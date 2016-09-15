@@ -19,7 +19,7 @@ describe(Support.getTestDialectTeaser('DataTypes'), function() {
     // Restore some sanity by resetting all parsers
     switch (dialect) {
       case 'postgres':
-        var types = require('../../node_modules/pg/node_modules/pg-types');
+        var types = require('pg-types');
 
         _.each(DataTypes, function (dataType) {
           if (dataType.types && dataType.types.postgres) {
@@ -28,10 +28,10 @@ describe(Support.getTestDialectTeaser('DataTypes'), function() {
             });
           }
         });
-        require('../../node_modules/pg/node_modules/pg-types/lib/binaryParsers').init(function (oid, converter) {
+        require('pg-types/lib/binaryParsers').init(function (oid, converter) {
           types.setTypeParser(oid, 'binary', converter);
         });
-        require('../../node_modules/pg/node_modules/pg-types/lib/textParsers').init(function (oid, converter) {
+        require('pg-types/lib/textParsers').init(function (oid, converter) {
           types.setTypeParser(oid, 'text', converter);
         });
         break;
@@ -307,7 +307,7 @@ describe(Support.getTestDialectTeaser('DataTypes'), function() {
 
   if (dialect === 'postgres' || dialect === 'sqlite') {
     // postgres actively supports IEEE floating point literals, and sqlite doesn't care what we throw at it
-    it('should store and parse IEEE floating point literals (NaN and Infinity', function () {
+    it('should store and parse IEEE floating point literals (NaN and Infinity)', function () {
       var Model = this.sequelize.define('model', {
         float: Sequelize.FLOAT,
         double: Sequelize.DOUBLE,
@@ -330,4 +330,38 @@ describe(Support.getTestDialectTeaser('DataTypes'), function() {
       });
     });
   }
+
+  if (dialect === 'postgres') {
+    it('should parse DECIMAL as string', function () {
+      var Model = this.sequelize.define('model', {
+        decimal: Sequelize.DECIMAL,
+        decimalPre: Sequelize.DECIMAL(10, 4),
+        decimalWithParser: Sequelize.DECIMAL(32, 15),
+        decimalWithIntParser: Sequelize.DECIMAL(10, 4),
+        decimalWithFloatParser: Sequelize.DECIMAL(10, 8)
+      });
+
+      var sampleData = {
+        id: 1,
+        decimal: 12345678.12345678,
+        decimalPre: 123456.1234,
+        decimalWithParser: '12345678123456781.123456781234567',
+        decimalWithIntParser: 1.234,
+        decimalWithFloatParser: 0.12345678
+      };
+
+      return Model.sync({ force: true }).then(function () {
+        return Model.create(sampleData);
+      }).then(function () {
+        return Model.find({id: 1});
+      }).then(function (user) {
+        expect(user.get('decimal')).to.be.eql('12345678.12345678');
+        expect(user.get('decimalPre')).to.be.eql('123456.1234');
+        expect(user.get('decimalWithParser')).to.be.eql('12345678123456781.123456781234567');
+        expect(user.get('decimalWithIntParser')).to.be.eql('1.2340');
+        expect(user.get('decimalWithFloatParser')).to.be.eql('0.12345678');
+      });
+    });
+  }
+
 });
