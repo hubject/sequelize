@@ -1,5 +1,5 @@
 {
-  "name": "sequelize",
+  "name": "@hubject/sequelize",
   "description": "Multi dialect ORM for Node.JS/io.js",
   "version": "3.24.3",
   "author": "Sascha Depold <sascha@depold.com>",
@@ -26,10 +26,10 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/sequelize/sequelize.git"
+    "url": "https://github.com/hubject/sequelize.git"
   },
   "bugs": {
-    "url": "https://github.com/sequelize/sequelize/issues"
+    "url": "https://github.com/hubject/sequelize/issues"
   },
   "dependencies": {
     "bluebird": "^3.3.4",
