@@ -253,6 +253,18 @@ describe(Support.getTestDialectTeaser('QueryInterface'), function() {
       });
     });
 
+    it('should work with enums (4)', function() {
+      return this.queryInterface.createSchema('archive').bind(this).then(function() {
+        return this.queryInterface.createTable('SomeTable', {
+          someEnum: {
+            type: DataTypes.ENUM,
+            values: ['value1', 'value2', 'value3'],
+            field: 'otherName'
+          }
+        }, { schema: 'archive' });
+      });
+    });
+
     it('should work with schemas', function() {
       var self = this;
       return self.sequelize.createSchema('hero').then(function() {
@@ -407,33 +419,67 @@ describe(Support.getTestDialectTeaser('QueryInterface'), function() {
     });
 
     it('should change columns', function() {
+      return this.queryInterface.createTable({
+        tableName: 'users'
+      }, {
+        id: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true
+        },
+        currency: DataTypes.INTEGER
+      }).bind(this).then(function() {
+        return this.queryInterface.changeColumn('users', 'currency', {
+          type: DataTypes.FLOAT,
+          allowNull: true
+        });
+      }).then(function() {
+        return this.queryInterface.describeTable({
+          tableName: 'users'
+        });
+      }).then(function (table) {
+        if (dialect === 'postgres' || dialect === 'postgres-native') {
+          expect(table.currency.type).to.equal('DOUBLE PRECISION');
+        } else {
+          expect(table.currency.type).to.equal('FLOAT');
+        }
+      });
+    });
+
+    // MSSQL doesn't support using a modified column in a check constraint.
+    // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-table-transact-sql
+    if (dialect !== 'mssql') {
+      it('should work with enums', function() {
         return this.queryInterface.createTable({
           tableName: 'users'
         }, {
-          id: {
-            type: DataTypes.INTEGER,
-            primaryKey: true,
-            autoIncrement: true
-          },
-          currency: DataTypes.INTEGER
+          firstName: DataTypes.STRING
         }).bind(this).then(function() {
-          return this.queryInterface.changeColumn('users', 'currency', {
-            type: DataTypes.FLOAT,
-            allowNull: true
+          return this.queryInterface.changeColumn('users', 'firstName', {
+            type: DataTypes.ENUM(['value1', 'value2', 'value3'])
           });
-        }).then(function() {
-            return this.queryInterface.describeTable({
-              tableName: 'users'
-            });
-        }).then(function (table) {
-          if (dialect === 'postgres' || dialect === 'postgres-native') {
-            expect(table.currency.type).to.equal('DOUBLE PRECISION');
-          } else {
-            expect(table.currency.type).to.equal('FLOAT');
-          }
         });
       });
-    });
+
+      it('should work with enums with schemas', function() {
+        return this.sequelize.createSchema('archive').bind(this).then(function() {
+          return this.queryInterface.createTable({
+            tableName: 'users',
+            schema: 'archive'
+          }, {
+            firstName: DataTypes.STRING
+          });
+        }).bind(this).then(function() {
+          return this.queryInterface.changeColumn({
+            tableName: 'users',
+            schema: 'archive'
+          }, 'firstName', {
+            type: DataTypes.ENUM(['value1', 'value2', 'value3'])
+          });
+        });
+      });
+    }
+  });
 
     //SQlite navitely doesnt support ALTER Foreign key
     if (dialect !== 'sqlite') {
@@ -604,6 +650,19 @@ describe(Support.getTestDialectTeaser('QueryInterface'), function() {
             expect(table).to.not.have.property('manager');
         });
       });
+
+      it('should be able to remove a column with primaryKey', function () {
+        return this.queryInterface.removeColumn('users', 'manager').bind(this).then(function() {
+          return this.queryInterface.describeTable('users');
+        }).then(function(table) {
+          expect(table).to.not.have.property('manager');
+          return this.queryInterface.removeColumn('users', 'id');
+        }).then(function() {
+          return this.queryInterface.describeTable('users');
+        }).then(function(table) {
+          expect(table).to.not.have.property('id');
+        });
+      });
     });
 
     describe('(with a schema)', function() {
@@ -657,6 +716,20 @@ describe(Support.getTestDialectTeaser('QueryInterface'), function() {
           }).then(function(table) {
             expect(table).to.not.have.property('lastName');
           });
+      });
+
+      it('should be able to remove a column with primaryKey', function () {
+        return this.queryInterface.removeColumn({
+          tableName: 'users',
+          schema: 'archive'
+        }, 'id').bind(this).then(function() {
+          return this.queryInterface.describeTable({
+            tableName: 'users',
+            schema: 'archive'
+          });
+        }).then(function(table) {
+          expect(table).to.not.have.property('id');
+        });
       });
     });
   });
